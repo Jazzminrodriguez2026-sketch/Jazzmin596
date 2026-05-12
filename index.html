@@ -752,6 +752,32 @@ setInterval(()=>{
 },15000);
 setInterval(()=>{if(curTab==='compartir')cargarRecibidas();},30000);
 
+/* ══ RECONEXIÓN AUTOMÁTICA ══ */
+let reconectando=false;
+async function reconectar(){
+  if(reconectando)return;
+  reconectando=true;
+  try{
+    setSyncStatus('spin','Reconectando...');
+    await sbEnsureUser();
+    await sbLoadTasks();
+    await sbLoadHistory();
+    setSyncStatus('ok','Sincronizado ✓');
+  }catch(e){
+    setSyncStatus('err','Sin conexión — reintentando...');
+  }finally{reconectando=false;}
+}
+// Reintentar cada 60 segundos si hay error
+setInterval(async()=>{
+  const dot=document.getElementById('sync-dot');
+  if(dot&&dot.classList.contains('err'))await reconectar();
+},60000);
+// Reconectar cuando el usuario vuelve a la app
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden)reconectar();
+});
+window.addEventListener('focus',()=>reconectar());
+
 /* ══ INICIO ══ */
 tasks.forEach(t=>{t.timerRef=null;t.startedAt=null;t.alarmRef=null;scheduleAlarm(t);});
 document.getElementById('my-code').textContent=myCode;
