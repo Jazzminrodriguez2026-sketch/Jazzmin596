@@ -784,5 +784,75 @@ document.getElementById('my-code').textContent=myCode;
 renderAll();
 syncInit();
 </script>
-</body>
+</body><input id="email" placeholder="correo">
+
+<input id="password" type="password" placeholder="contraseña">
+
+<button onclick="registrarse()">
+Registrarse
+</button>
+
+<button onclick="login()">
+Ingresar
+</button>
+
+<script>
+
+async function registrarse() {
+
+  const email =
+    document.getElementById("email").value;
+
+  const password =
+    document.getElementById("password").value;
+
+  const { error } =
+    await supabase.auth.signUp({
+
+      email: email,
+      password: password
+
+    });
+
+  if(error){
+
+    alert(error.message);
+
+  } else {
+
+    alert("Usuario creado");
+
+  }
+
+}
+
+async function login() {
+
+  const email =
+    document.getElementById("email").value;
+
+  const password =
+    document.getElementById("password").value;
+
+  const { error } =
+    await supabase.auth.signInWithPassword({
+
+      email: email,
+      password: password
+
+    });
+
+  if(error){
+
+    alert(error.message);
+
+  } else {
+
+    alert("Login correcto");
+
+  }
+
+}
+
+</script>
 </html>
