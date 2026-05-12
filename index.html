@@ -9,6 +9,7 @@
 <meta name="theme-color" content="#7c6ef5"/>
 <title>Planificador Semanal</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
@@ -23,32 +24,24 @@
 }
 html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.5;overscroll-behavior:none}
 .root{max-width:660px;margin:0 auto;padding:calc(var(--safe-top)+14px) 14px calc(var(--safe-bot)+32px)}
-
-/* HEADER */
 .header{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:14px}
 .logo{width:36px;height:36px;background:var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;flex-shrink:0}
 .header h1{font-size:16px;font-weight:700}
 .header p{font-size:11px;color:var(--muted)}
 #clock{margin-left:auto;font-size:21px;font-weight:700;color:var(--accent3);font-variant-numeric:tabular-nums;letter-spacing:.03em;white-space:nowrap}
-
-/* TABS */
 .tabs{display:flex;gap:5px;margin-bottom:14px}
-.tab{flex:1;padding:9px 6px;border-radius:9px;border:1px solid var(--border);background:var(--bg2);color:var(--muted);font-size:12px;cursor:pointer;text-align:center;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px}
+.tab{flex:1;padding:9px 4px;border-radius:9px;border:1px solid var(--border);background:var(--bg2);color:var(--muted);font-size:12px;cursor:pointer;text-align:center;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:4px}
 .tab.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
-
-/* CARDS */
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px}
 .label{font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:7px}
 .grid4{display:grid;grid-template-columns:1fr 68px 68px 98px;gap:7px;margin-bottom:11px}
 @media(max-width:460px){.grid4{grid-template-columns:1fr 1fr}}
 .field label{display:block;font-size:10px;color:var(--muted);margin-bottom:3px;letter-spacing:.05em;text-transform:uppercase}
-.field input,.field select{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);border-radius:8px;padding:9px 10px;font-size:15px;outline:none;-webkit-appearance:none}
+.field input,.field select{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);border-radius:8px;padding:9px 10px;font-size:15px;outline:none;-webkit-appearance:none;font-family:inherit}
 .field input:focus,.field select:focus{border-color:var(--accent)}
 .days-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
 .dp{padding:6px 11px;border-radius:20px;background:var(--bg3);border:1px solid var(--border2);color:var(--muted);font-size:12px;cursor:pointer;user-select:none;transition:all .15s;min-height:34px}
 .dp.on{background:rgba(99,88,212,.55);border-color:var(--accent);color:#fff}
-
-/* BUTTONS */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:10px 15px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:14px;cursor:pointer;transition:all .15s;min-height:44px;white-space:nowrap;font-family:inherit}
 .btn:active{opacity:.8;transform:scale(.97)}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
@@ -59,14 +52,10 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:sys
 .btn.full{width:100%;justify-content:center}
 .btn.icon-btn{background:transparent;border:none;color:var(--muted2);min-height:36px;min-width:36px;padding:6px;justify-content:center;font-size:17px}
 .btn.icon-btn:active{color:var(--red)}
-.btn-row{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
-
-/* DAY NAV */
+.btn-row{display:flex;gap:8px;justify-content:flex-end}
 .day-nav{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
 .dnb{padding:6px 12px;border-radius:20px;background:var(--bg2);border:1px solid var(--border);color:var(--muted);font-size:12px;cursor:pointer;min-height:34px;transition:all .15s}
 .dnb.active{background:var(--accent);border-color:var(--accent);color:#fff}
-
-/* TASK CARDS */
 .tasks{display:flex;flex-direction:column;gap:8px}
 .tc{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:12px 12px 12px 16px;position:relative;overflow:hidden;transition:border-color .2s}
 .tc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:11px 0 0 11px;background:var(--muted2)}
@@ -89,14 +78,10 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:sys
 .done-time{font-size:20px;font-weight:700;color:var(--green);font-variant-numeric:tabular-nums}
 .done-diff{font-size:11px;color:var(--muted)}
 .tc-actions{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap}
-
-/* HISTORY */
 .hist-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:7px}
 .hist-name{font-size:14px;font-weight:600;color:var(--text)}
-.hist-meta{font-size:11px;color:var(--muted);margin-top:3px;font-variant-numeric:tabular-nums}
+.hist-meta{font-size:11px;color:var(--muted);margin-top:3px}
 .hist-time{font-size:13px;color:var(--green);margin-top:2px;font-weight:600}
-
-/* SHARE */
 .share-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px}
 .share-card h2{font-size:13px;font-weight:600;margin-bottom:11px;color:var(--text);display:flex;align-items:center;gap:7px}
 .code-box{background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:14px;text-align:center;margin-bottom:11px}
@@ -109,12 +94,8 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:sys
 .dot{width:8px;height:8px;border-radius:50%;background:var(--muted2);flex-shrink:0}
 .dot.ok{background:var(--green)}.dot.err{background:var(--red)}.dot.spin{background:var(--amber);animation:blink 1s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-
-/* EMPTY */
 .empty{text-align:center;padding:28px 16px;color:var(--muted);font-size:13px}
 .empty i{font-size:34px;display:block;margin:0 auto 10px;opacity:.3}
-
-/* SUMMARY */
 .summary{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:13px;margin-top:14px}
 .summary h2{font-size:13px;font-weight:600;margin-bottom:11px;color:var(--text);display:flex;align-items:center;gap:7px}
 .sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:7px;margin-bottom:9px}
@@ -123,8 +104,6 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:sys
 .sv{font-size:20px;font-weight:700;color:var(--accent3);font-variant-numeric:tabular-nums}
 .sv.g{color:var(--green)}
 .sadj{background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.3);border-radius:8px;padding:9px 11px;font-size:12px;color:var(--amber);display:flex;align-items:flex-start;gap:7px;line-height:1.5}
-
-/* ALARM */
 .alarm-wrap{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:999;align-items:center;justify-content:center;padding:20px}
 .alarm-wrap.show{display:flex}
 .alarm-box{background:var(--bg2);border:2px solid var(--red);border-radius:18px;padding:34px 26px;text-align:center;width:100%;max-width:320px;animation:ain .3s cubic-bezier(.34,1.56,.64,1)}
@@ -135,8 +114,6 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:sys
 .alarm-box .alarm-task{font-size:15px;color:var(--text);margin-bottom:20px;line-height:1.4}
 .alarm-btns{display:flex;flex-direction:column;gap:8px}
 .alarm-btns .btn{width:100%;justify-content:center;font-size:15px;min-height:48px}
-
-/* TOAST */
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:11px 18px;font-size:13px;color:var(--text);transition:transform .3s;z-index:9999;white-space:nowrap;max-width:92vw;text-align:center}
 .toast.show{transform:translateX(-50%) translateY(0)}
 .toast.ok{border-color:var(--green);color:var(--green)}
@@ -145,7 +122,6 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:sys
 </head>
 <body>
 <div class="root">
-
   <div class="header">
     <div class="logo"><i class="ti ti-calendar-check"></i></div>
     <div><h1>Planificador Semanal</h1><p>Organizá tu semana</p></div>
@@ -158,7 +134,7 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:sys
     <div class="tab" id="tab-compartir" onclick="switchTab('compartir')"><i class="ti ti-share"></i> Compartir</div>
   </div>
 
-  <!-- ══ PANEL TAREAS ══ -->
+  <!-- PANEL TAREAS -->
   <div id="panel-tareas">
     <div class="card">
       <div class="label">Nueva tarea</div>
@@ -179,12 +155,10 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:sys
         <button class="btn primary" id="btn-add"><i class="ti ti-device-floppy"></i> Guardar tarea</button>
       </div>
     </div>
-
     <div class="label">Día</div>
     <div class="day-nav" id="day-nav"></div>
     <div class="label" id="tasks-label">Tareas</div>
     <div class="tasks" id="tasks-list"></div>
-
     <div class="summary" id="summary" style="display:none">
       <h2><i class="ti ti-chart-bar"></i> Resumen del día</h2>
       <div class="sgrid" id="sgrid"></div>
@@ -192,12 +166,12 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:sys
     </div>
   </div>
 
-  <!-- ══ PANEL HISTORIAL ══ -->
+  <!-- PANEL HISTORIAL -->
   <div id="panel-historial" style="display:none">
-    <div class="card" style="margin-bottom:12px">
-      <div class="label">Filtrar historial</div>
+    <div class="card">
+      <div class="label">Filtrar</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <select id="hist-filter-day" onchange="renderHistorial()" style="flex:1;background:var(--bg3);border:1px solid var(--border2);color:var(--text);border-radius:8px;padding:9px 10px;font-size:14px;outline:none">
+        <select id="hist-filter" onchange="renderHistorial()" style="flex:1;background:var(--bg3);border:1px solid var(--border2);color:var(--text);border-radius:8px;padding:9px 10px;font-size:14px;outline:none">
           <option value="">Todos los días</option>
           <option value="0">Lunes</option><option value="1">Martes</option>
           <option value="2">Miércoles</option><option value="3">Jueves</option>
@@ -210,9 +184,8 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:sys
     <div id="historial-list"></div>
   </div>
 
-  <!-- ══ PANEL COMPARTIR ══ -->
+  <!-- PANEL COMPARTIR -->
   <div id="panel-compartir" style="display:none">
-
     <div class="share-card">
       <h2><i class="ti ti-id"></i> Tu código personal</h2>
       <div class="code-box">
@@ -251,26 +224,21 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:sys
 
     <div class="share-card">
       <h2><i class="ti ti-eye"></i> Ver historial de alguien</h2>
-      <div class="label">Código de la persona</div>
       <div class="input-row">
-        <input id="hist-code" type="text" placeholder="Ej: B9KL" maxlength="4" style="text-transform:uppercase;letter-spacing:.15em;font-size:18px;font-weight:700"/>
+        <input id="hist-code" type="text" placeholder="Código ej: B9KL" maxlength="4" style="text-transform:uppercase;letter-spacing:.15em;font-size:18px;font-weight:700"/>
         <button class="btn primary" onclick="verHistorialAmigo()"><i class="ti ti-eye"></i></button>
       </div>
-      <div id="amigo-historial" style="margin-top:11px"></div>
+      <div id="amigo-historial" style="margin-top:10px"></div>
     </div>
 
     <div class="share-card">
       <h2><i class="ti ti-inbox"></i> Tareas que te enviaron</h2>
       <div class="tasks" id="incoming-list"></div>
-      <div class="sync-row" style="margin-top:8px">
-        <div class="dot" id="sync-dot"></div><span id="sync-text">Cargando...</span>
-      </div>
+      <div class="sync-row"><div class="dot" id="sync-dot"></div><span id="sync-text">Cargando...</span></div>
     </div>
-
   </div>
 </div>
 
-<!-- ALARM -->
 <div class="alarm-wrap" id="alarm-wrap">
   <div class="alarm-box">
     <i class="ti ti-bell-ringing alarm-icon"></i>
@@ -282,142 +250,134 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:sys
     </div>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
-/* ══ CONFIG JSONBIN ══ */
-const BIN_ID  = '6a00fa355d6c3911694c785b';
-const API_KEY = '$2a$10$g0/.MJYZphkrfY7uXneU5.ZBQKq3TpW4g4ventg7jjn/2ZBmEodD6';
-const API     = 'https://api.jsonbin.io/v3/b/';
+/* ══ SUPABASE CONFIG ══ */
+const SUPA_URL = 'https://ipvbfssnqpgtruwxjapb.supabase.co';
+const SUPA_KEY = 'sb_publishable_Xe5B0iJID-fzh6N5G9sgPw_rRMXjmpU';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 /* ══ ESTADO ══ */
-const DAYS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
-const DIAS_FULL = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-
-// tasks = tareas activas (pendientes/en curso)
-// history = tareas finalizadas (permanente, sin límite)
-let tasks   = loadLocal('planner_tasks', []);
-let history = loadLocal('planner_history', []);
+const DAYS=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+const DIAS_FULL=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+let tasks   = loadLocal('planner_tasks2', []);
+let history = loadLocal('planner_history2', []);
 let curDay  = (()=>{const d=new Date().getDay();return d===0?6:d-1;})();
 let selDays=[], fDays=[];
 let alarmId=null, alarmInt=null, actx=null;
 let myCode  = getOrCreateCode();
-let friendCode = null;
-let curTab  = 'tareas';
+let friendCode=null, curTab='tareas';
 
-/* ══ PERSISTENCIA LOCAL ══ */
-function loadLocal(key, def){
-  try{const r=localStorage.getItem(key);return r?JSON.parse(r):def;}catch(e){return def;}
-}
-function saveLocal(key, data){
-  try{localStorage.setItem(key, JSON.stringify(data));}catch(e){
-    showToast('Almacenamiento lleno — eliminá tareas antiguas','err');
-  }
-}
+/* ══ LOCAL STORAGE ══ */
+function loadLocal(key,def){try{const r=localStorage.getItem(key);return r?JSON.parse(r):def;}catch(e){return def;}}
+function saveLocal(key,data){try{localStorage.setItem(key,JSON.stringify(data));}catch(e){}}
 function saveTasks(){
-  const d=tasks.map(t=>({
-    id:t.id,name:t.name,hour:t.hour,min:t.min,dur:t.dur,days:t.days,
-    state:(t.state==='running'||t.state==='alarming')?'pending':t.state,
-    elapsed:t.elapsed,fromFriend:t.fromFriend||false,sentBy:t.sentBy||''
-  }));
-  saveLocal('planner_tasks', d);
+  saveLocal('planner_tasks2', tasks.map(t=>({
+    id:t.id,name:t.name,hour:t.hour,min:t.min,dur:t.dur,
+    days:t.days,state:(t.state==='running'||t.state==='alarming')?'pending':t.state,
+    elapsed:t.elapsed,from_friend:t.from_friend||false,sent_by:t.sent_by||''
+  })));
 }
-function saveHistory(){saveLocal('planner_history', history);}
+function saveHistLocal(){saveLocal('planner_history2',history);}
 
 /* ══ CÓDIGO DE USUARIO ══ */
 function getOrCreateCode(){
-  let c=localStorage.getItem('my_planner_code');
-  if(!c){c=Math.random().toString(36).substring(2,6).toUpperCase();localStorage.setItem('my_planner_code',c);}
+  let c=localStorage.getItem('my_planner_code2');
+  if(!c){c=Math.random().toString(36).substring(2,6).toUpperCase();localStorage.setItem('my_planner_code2',c);}
   return c;
 }
 
-/* ══ JSONBIN API ══ */
-async function readBin(){
-  const r=await fetch(`${API}${BIN_ID}/latest`,{headers:{'X-Master-Key':API_KEY}});
-  if(!r.ok)throw new Error('read');
-  return (await r.json()).record;
-}
-async function writeBin(data){
-  const r=await fetch(`${API}${BIN_ID}`,{method:'PUT',
-    headers:{'Content-Type':'application/json','X-Master-Key':API_KEY},
-    body:JSON.stringify(data)});
-  if(!r.ok)throw new Error('write');
+/* ══ SUPABASE HELPERS ══ */
+async function sbEnsureUser(){
+  const {data}=await sb.from('users').select('code').eq('code',myCode).single();
+  if(!data) await sb.from('users').insert({code:myCode});
 }
 
-/* ══ SYNC INIT ══ */
+async function sbSaveTasks(){
+  try{
+    await sb.from('tasks').delete().eq('user_code',myCode);
+    const rows=tasks.map(t=>({
+      id:t.id, user_code:myCode, name:t.name,
+      hour:t.hour, min:t.min, dur:t.dur,
+      days:JSON.stringify(t.days),
+      state:(t.state==='running'||t.state==='alarming')?'pending':t.state,
+      elapsed:t.elapsed, from_friend:t.from_friend||false, sent_by:t.sent_by||''
+    }));
+    if(rows.length) await sb.from('tasks').insert(rows);
+  }catch(e){}
+}
+
+async function sbLoadTasks(){
+  try{
+    const {data}=await sb.from('tasks').select('*').eq('user_code',myCode);
+    if(data&&data.length){
+      tasks=data.map(t=>({
+        ...t, days:JSON.parse(t.days||'[]'),
+        timerRef:null, startedAt:null, alarmRef:null
+      }));
+      saveTasks(); renderAll();
+    }
+  }catch(e){}
+}
+
+async function sbSaveHistory(){
+  try{
+    await sb.from('history').delete().eq('user_code',myCode);
+    const rows=history.map(h=>({
+      id:h.id, user_code:myCode, name:h.name,
+      hour:h.hour, min:h.min, dur:h.dur,
+      days:JSON.stringify(h.days||[]),
+      day:h.day, actual_time:h.actualTime,
+      date:h.date, time:h.time||''
+    }));
+    if(rows.length) await sb.from('history').insert(rows);
+  }catch(e){}
+}
+
+async function sbLoadHistory(){
+  try{
+    const {data}=await sb.from('history').select('*').eq('user_code',myCode).order('id',{ascending:false});
+    if(data&&data.length){
+      history=data.map(h=>({...h,days:JSON.parse(h.days||'[]'),actualTime:h.actual_time}));
+      saveHistLocal();
+    }
+  }catch(e){}
+}
+
+/* ══ INIT ══ */
 async function syncInit(){
   try{
-    const data=await readBin();
-    const users=data.users||{};
-    if(!users[myCode]){
-      users[myCode]={tasks:[],history:[]};
-      await writeBin({users});
+    setSyncStatus('spin','Conectando...');
+    await sbEnsureUser();
+    await sbLoadTasks();
+    await sbLoadHistory();
+    await cargarRecibidas();
+    setSyncStatus('ok','Sincronizado con la nube ✓');
+    showToast('Conectado','ok');
+  }catch(e){
+    setSyncStatus('err','Sin conexión — usando datos locales');
+  }
+}
+
+/* ══ TAREAS RECIBIDAS ══ */
+async function cargarRecibidas(){
+  try{
+    const {data}=await sb.from('tasks').select('*').eq('sent_by',myCode).neq('user_code',myCode);
+    // Cargar tareas enviadas a mí por otros
+    const {data:incoming}=await sb.from('tasks').select('*').eq('user_code',myCode).eq('from_friend',true);
+    if(incoming&&incoming.length){
+      incoming.forEach(t=>{
+        const parsed={...t,days:JSON.parse(t.days||'[]'),timerRef:null,startedAt:null,alarmRef:null};
+        if(!tasks.find(x=>x.id===parsed.id)){
+          tasks.push(parsed);scheduleAlarm(tasks[tasks.length-1]);
+        }
+      });
+      saveTasks();renderAll();
     }
-    // Subir historial local a la nube (para que otros lo puedan ver)
-    users[myCode].history = history;
-    await writeBin({users});
-    await cargarRecibidas(users);
-    setSyncStatus(true,'Sincronizado');
-  }catch(e){setSyncStatus(false,'Sin conexión — modo local');}
-}
-
-/* ══ CARGAR TAREAS RECIBIDAS ══ */
-async function cargarRecibidas(usersData){
-  try{
-    const data=usersData||(await readBin());
-    const users=data.users||{};
-    const incoming=(users[myCode]&&users[myCode].tasks)||[];
-    let nuevas=0;
-    incoming.forEach(t=>{
-      if(!tasks.find(x=>x.id===t.id)){
-        tasks.push({...t,timerRef:null,startedAt:null,alarmRef:null,fromFriend:true});
-        scheduleAlarm(tasks[tasks.length-1]);
-        nuevas++;
-      }
-    });
-    if(nuevas){showToast(nuevas+' tarea'+(nuevas>1?'s':'')+' recibida'+(nuevas>1?'s':''),'ok');saveTasks();renderAll();}
-    renderRecibidas(incoming);
-    setSyncStatus(true,'Sincronizado');
-  }catch(e){setSyncStatus(false,'Error de conexión');}
-}
-
-/* ══ VER HISTORIAL DE AMIGO ══ */
-async function verHistorialAmigo(){
-  const code=document.getElementById('hist-code').value.trim().toUpperCase();
-  if(code.length<4){showToast('Ingresá un código de 4 letras','err');return;}
-  const el=document.getElementById('amigo-historial');
-  el.innerHTML='<div class="sync-row"><div class="dot spin"></div><span>Buscando...</span></div>';
-  try{
-    const data=await readBin();
-    const users=data.users||{};
-    if(!users[code]){el.innerHTML='<div class="empty"><i class="ti ti-user-off"></i>Código no encontrado</div>';return;}
-    const hist=users[code].history||[];
-    if(!hist.length){el.innerHTML='<div class="empty"><i class="ti ti-history"></i>Este usuario no tiene historial aún</div>';return;}
-    el.innerHTML='<div class="label" style="margin-bottom:8px">Historial de '+code+'</div>';
-    hist.slice().reverse().forEach(h=>{
-      const d=document.createElement('div');
-      d.className='hist-item';
-      d.innerHTML=`<div class="tc-top" style="margin-bottom:4px">
-        <div class="hist-name">${escH(h.name)}</div>
-        <span class="badge done"><i class="ti ti-check"></i> Finalizada</span>
-      </div>
-      <div class="hist-meta">${DIAS_FULL[h.day]||''} · ${pad(h.hour)}:${pad(h.min)} · ~${h.dur} min est.</div>
-      <div class="hist-time"><i class="ti ti-clock-check"></i> ${fmtSec(h.actualTime)} reales · ${h.date}</div>`;
-      el.appendChild(d);
-    });
-  }catch(e){el.innerHTML='<div class="empty"><i class="ti ti-wifi-off"></i>Error de conexión</div>';}
-}
-
-/* ══ SUBIR HISTORIAL A NUBE ══ */
-async function uploadHistory(){
-  try{
-    const data=await readBin();
-    const users=data.users||{};
-    if(!users[myCode])users[myCode]={tasks:[],history:[]};
-    users[myCode].history=history;
-    await writeBin({users});
-  }catch(e){}
+    renderRecibidas(incoming||[]);
+    setSyncStatus('ok','Sincronizado');
+  }catch(e){setSyncStatus('err','Error de conexión');}
 }
 
 function renderRecibidas(list){
@@ -425,44 +385,40 @@ function renderRecibidas(list){
   if(!list||!list.length){el.innerHTML='<div class="empty"><i class="ti ti-inbox"></i>Nadie te envió tareas aún</div>';return;}
   el.innerHTML='';
   list.forEach(t=>{
-    const d=document.createElement('div');
-    d.className='tc shared-in';
-    d.innerHTML=`<div class="tc-top">
-      <div><div class="tc-name">${escH(t.name)}</div>
-      <div class="tc-meta">${pad(t.hour)}:${pad(t.min)} · ~${t.dur} min · De: <b>${escH(t.sentBy||'?')}</b></div></div>
-      <span class="badge amber"><i class="ti ti-user"></i> Recibida</span>
-    </div>`;
+    const d=document.createElement('div');d.className='tc shared-in';
+    d.innerHTML=`<div class="tc-top"><div><div class="tc-name">${escH(t.name)}</div>
+    <div class="tc-meta">${pad(t.hour)}:${pad(t.min)} · ~${t.dur} min · De: <b>${escH(t.sent_by||'?')}</b></div></div>
+    <span class="badge amber"><i class="ti ti-user"></i> Recibida</span></div>`;
     el.appendChild(d);
   });
 }
 
-function setSyncStatus(ok,txt){
-  document.getElementById('sync-dot').className='dot '+(ok?'ok':'err');
+function setSyncStatus(type,txt){
+  document.getElementById('sync-dot').className='dot '+type;
   document.getElementById('sync-text').textContent=txt;
 }
 
 /* ══ BUSCAR AMIGO ══ */
 async function buscarAmigo(){
   const code=document.getElementById('friend-code').value.trim().toUpperCase();
-  if(code.length<4){showToast('El código debe tener 4 caracteres','err');return;}
+  if(code.length<4){showToast('Ingresá 4 caracteres','err');return;}
   if(code===myCode){showToast('Ese es tu propio código','err');return;}
-  document.getElementById('fstatus').textContent='Buscando...';
   document.getElementById('fdot').className='dot spin';
+  document.getElementById('fstatus').textContent='Buscando...';
   try{
-    const data=await readBin();
-    const users=data.users||{};
-    if(!users[code]){
-      document.getElementById('fstatus').textContent='Código no encontrado';
+    const {data}=await sb.from('users').select('code').eq('code',code).single();
+    if(!data){
       document.getElementById('fdot').className='dot err';
+      document.getElementById('fstatus').textContent='Código no encontrado';
       showToast('No existe ese código','err');return;
     }
     friendCode=code;
     document.getElementById('friend-form').style.display='block';
-    document.getElementById('fstatus').textContent='Usuario '+code+' encontrado ✓';
     document.getElementById('fdot').className='dot ok';
+    document.getElementById('fstatus').textContent='Usuario '+code+' encontrado ✓';
   }catch(e){
-    document.getElementById('fstatus').textContent='Error de conexión';
     document.getElementById('fdot').className='dot err';
+    document.getElementById('fstatus').textContent='Error de conexión';
   }
 }
 
@@ -474,6 +430,7 @@ document.querySelectorAll('#fdays .dp').forEach(el=>{
     else{fDays.push(d);el.classList.add('on');}
   });
 });
+
 async function enviarTarea(){
   if(!friendCode){showToast('Primero buscá el código','err');return;}
   const name=document.getElementById('fname').value.trim();
@@ -482,18 +439,40 @@ async function enviarTarea(){
   const min=Math.min(59,Math.max(0,parseInt(document.getElementById('fmin').value)||0));
   const dur=Math.max(1,parseInt(document.getElementById('fdur').value)||30);
   const days=fDays.length>0?[...fDays]:[curDay];
-  const t={id:Date.now(),name,hour,min,dur,days,state:'pending',elapsed:0,actualTime:null,sentBy:myCode,fromFriend:true};
   try{
-    const data=await readBin();
-    const users=data.users||{};
-    if(!users[friendCode])users[friendCode]={tasks:[],history:[]};
-    if(!users[friendCode].tasks)users[friendCode].tasks=[];
-    users[friendCode].tasks.push(t);
-    await writeBin({users});
+    await sb.from('tasks').insert({
+      id:Date.now(), user_code:friendCode, name, hour, min, dur,
+      days:JSON.stringify(days), state:'pending', elapsed:0,
+      from_friend:true, sent_by:myCode
+    });
     document.getElementById('fname').value='';
     fDays=[];document.querySelectorAll('#fdays .dp').forEach(el=>el.classList.remove('on'));
     showToast('Tarea enviada a '+friendCode,'ok');
   }catch(e){showToast('Error al enviar','err');}
+}
+
+/* ══ VER HISTORIAL DE AMIGO ══ */
+async function verHistorialAmigo(){
+  const code=document.getElementById('hist-code').value.trim().toUpperCase();
+  if(code.length<4){showToast('Ingresá un código de 4 letras','err');return;}
+  const el=document.getElementById('amigo-historial');
+  el.innerHTML='<div class="sync-row"><div class="dot spin"></div><span>Cargando historial...</span></div>';
+  try{
+    const {data}=await sb.from('history').select('*').eq('user_code',code).order('id',{ascending:false});
+    if(!data||!data.length){el.innerHTML='<div class="empty"><i class="ti ti-history"></i>Este usuario no tiene historial aún</div>';return;}
+    el.innerHTML=`<div class="label" style="margin-bottom:8px">Historial de ${code} — ${data.length} tareas</div>`;
+    data.forEach(h=>{
+      const diff=(h.actual_time||0)-h.dur*60;
+      const dl=diff===0?'En tiempo':diff>0?'+'+fmtSec(diff)+' extra':'-'+fmtSec(Math.abs(diff))+' ahorrado';
+      const d=document.createElement('div');d.className='hist-item';
+      d.innerHTML=`<div class="tc-top" style="margin-bottom:4px">
+        <div class="hist-name">${escH(h.name)}</div>
+        <span class="badge done"><i class="ti ti-check"></i> Finalizada</span></div>
+        <div class="hist-meta">${DIAS_FULL[h.day]||'—'} · ${pad(h.hour)}:${pad(h.min)} · ~${h.dur} min · ${h.date||''} ${h.time||''}</div>
+        <div class="hist-time"><i class="ti ti-clock-check"></i> ${fmtSec(h.actual_time||0)} · ${dl}</div>`;
+      el.appendChild(d);
+    });
+  }catch(e){el.innerHTML='<div class="empty"><i class="ti ti-wifi-off"></i>Error de conexión</div>';}
 }
 
 /* ══ COPIAR CÓDIGO ══ */
@@ -530,8 +509,8 @@ tickClock();setInterval(tickClock,1000);
 function getCtx(){if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();return actx;}
 function beep(){
   try{const c=getCtx();if(c.state==='suspended')c.resume();
-    const o=c.createOscillator(),g=c.createGain();
-    o.connect(g);g.connect(c.destination);o.type='square';o.frequency.value=880;
+    const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);
+    o.type='square';o.frequency.value=880;
     g.gain.setValueAtTime(0.28,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.4);
     o.start(c.currentTime);o.stop(c.currentTime+0.4);}catch(e){}
 }
@@ -547,19 +526,19 @@ document.querySelectorAll('#days-picker .dp').forEach(el=>{
   });
 });
 
-/* ══ GUARDAR / AGREGAR TAREA ══ */
+/* ══ GUARDAR TAREA ══ */
 document.getElementById('btn-add').addEventListener('click',addTask);
 document.getElementById('iname').addEventListener('keydown',e=>{if(e.key==='Enter')addTask();});
 
-function addTask(){
+async function addTask(){
   const name=document.getElementById('iname').value.trim();
-  if(!name){document.getElementById('iname').focus();showToast('Escribí el nombre de la tarea','err');return;}
+  if(!name){document.getElementById('iname').focus();showToast('Escribí el nombre','err');return;}
   const hour=Math.min(23,Math.max(0,parseInt(document.getElementById('ihour').value)||0));
   const min=Math.min(59,Math.max(0,parseInt(document.getElementById('imin').value)||0));
   const dur=Math.max(1,parseInt(document.getElementById('idur').value)||30);
   const days=selDays.length>0?[...selDays]:[curDay];
-  const t={id:Date.now(),name,hour,min,dur,days,state:'pending',elapsed:0,
-    startedAt:null,timerRef:null,actualTime:null,alarmRef:null,fromFriend:false,sentBy:''};
+  const id=Date.now();
+  const t={id,name,hour,min,dur,days,state:'pending',elapsed:0,startedAt:null,timerRef:null,actualTime:null,alarmRef:null,from_friend:false,sent_by:''};
   tasks.push(t);
   document.getElementById('iname').value='';
   document.getElementById('ihour').value='9';
@@ -567,10 +546,18 @@ function addTask(){
   document.getElementById('idur').value='30';
   selDays=[];document.querySelectorAll('#days-picker .dp').forEach(el=>el.classList.remove('on'));
   scheduleAlarm(t);
-  if(navigator.vibrate)navigator.vibrate(30);
   saveTasks();
   showToast('Tarea guardada: '+name,'ok');
   renderAll();
+  // Guardar en Supabase
+  try{
+    await sb.from('tasks').insert({
+      id, user_code:myCode, name, hour, min, dur,
+      days:JSON.stringify(days), state:'pending',
+      elapsed:0, from_friend:false, sent_by:''
+    });
+  }catch(e){}
+  if(navigator.vibrate)navigator.vibrate(30);
 }
 
 /* ══ ALARMAS ══ */
@@ -610,94 +597,98 @@ function startTask(id){
     t.elapsed=Math.floor((Date.now()-t.startedAt)/1000);
     const el=document.getElementById('crono-'+t.id);if(el)el.textContent=fmtSec(t.elapsed);
   },1000);
-  if(navigator.vibrate)navigator.vibrate(50);saveTasks();renderAll();
+  saveTasks();renderAll();
 }
 
-/* ══ FINALIZAR TAREA → va al historial ══ */
-function finishTask(id){
+/* ══ FINALIZAR TAREA ══ */
+async function finishTask(id){
   const t=tasks.find(x=>x.id===id);if(!t)return;
   if(t.timerRef){clearInterval(t.timerRef);t.timerRef=null;}
   if(t.startedAt)t.elapsed=Math.floor((Date.now()-t.startedAt)/1000);
-  t.state='done';t.actualTime=t.elapsed;
+  t.actualTime=t.elapsed;
   stopBeep();
-  // Guardar en historial permanente
+  // Guardar en historial
   const now=new Date();
-  history.push({
-    id:t.id, name:t.name, hour:t.hour, min:t.min, dur:t.dur,
+  const hEntry={
+    id:Date.now(), name:t.name, hour:t.hour, min:t.min, dur:t.dur,
     days:t.days, day:curDay, actualTime:t.actualTime,
     date:now.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}),
     time:pad(now.getHours())+':'+pad(now.getMinutes())
-  });
-  saveHistory();
-  // Remover de tareas activas
+  };
+  history.unshift(hEntry);
+  saveHistLocal();
+  // Eliminar de tareas activas
   tasks=tasks.filter(x=>x.id!==id);
   saveTasks();
   if(navigator.vibrate)navigator.vibrate([50,30,50]);
-  showToast('Tarea finalizada y guardada en historial','ok');
-  uploadHistory(); // subir a nube para compartir
+  showToast('¡Tarea finalizada! Guardada en historial','ok');
   renderAll();
+  // Guardar en Supabase
+  try{
+    await sb.from('tasks').delete().eq('id',id);
+    await sb.from('history').insert({
+      id:hEntry.id, user_code:myCode, name:hEntry.name,
+      hour:hEntry.hour, min:hEntry.min, dur:hEntry.dur,
+      days:JSON.stringify(hEntry.days), day:hEntry.day,
+      actual_time:hEntry.actualTime, date:hEntry.date, time:hEntry.time
+    });
+  }catch(e){}
 }
 
 /* ══ ELIMINAR TAREA ══ */
-function deleteTask(id){
+async function deleteTask(id){
   const t=tasks.find(x=>x.id===id);
   if(t){if(t.timerRef)clearInterval(t.timerRef);if(t.alarmRef)clearTimeout(t.alarmRef);}
   tasks=tasks.filter(x=>x.id!==id);
   saveTasks();renderAll();
+  try{await sb.from('tasks').delete().eq('id',id);}catch(e){}
 }
 
 /* ══ HISTORIAL ══ */
 function renderHistorial(){
   const el=document.getElementById('historial-list');
-  const filter=document.getElementById('hist-filter-day').value;
-  let list=history.slice().reverse();
+  const filter=document.getElementById('hist-filter').value;
+  let list=history.slice();
   if(filter!=='')list=list.filter(h=>h.days&&h.days.includes(+filter));
-  if(!list.length){
-    el.innerHTML='<div class="empty"><i class="ti ti-history"></i>Sin tareas en el historial'+(filter!==''?' para este día':'')+'</div>';
-    return;
-  }
-  el.innerHTML='<div class="label" style="margin-bottom:8px">'+list.length+' tarea'+(list.length>1?'s':'')+' registrada'+(list.length>1?'s':'')+'</div>';
+  if(!list.length){el.innerHTML='<div class="empty"><i class="ti ti-history"></i>Sin historial aún</div>';return;}
+  el.innerHTML=`<div class="label" style="margin-bottom:8px">${list.length} tarea${list.length>1?'s':''} en el historial</div>`;
   list.forEach(h=>{
-    const d=document.createElement('div');d.className='hist-item';
-    const diff=h.actualTime-h.dur*60;
+    const diff=(h.actualTime||0)-h.dur*60;
     const dl=diff===0?'En tiempo':diff>0?'+'+fmtSec(diff)+' extra':'-'+fmtSec(Math.abs(diff))+' ahorrado';
-    d.innerHTML=`
-      <div class="tc-top" style="margin-bottom:4px">
-        <div class="hist-name">${escH(h.name)}</div>
-        <span class="badge done"><i class="ti ti-check"></i> Finalizada</span>
-      </div>
-      <div class="hist-meta">${DIAS_FULL[h.day]||'—'} · ${pad(h.hour)}:${pad(h.min)} · ~${h.dur} min est. · ${h.date} ${h.time||''}</div>
-      <div class="hist-time"><i class="ti ti-clock-check"></i> ${fmtSec(h.actualTime)} · ${dl}</div>`;
+    const d=document.createElement('div');d.className='hist-item';
+    d.innerHTML=`<div class="tc-top" style="margin-bottom:4px">
+      <div class="hist-name">${escH(h.name)}</div>
+      <span class="badge done"><i class="ti ti-check"></i> Finalizada</span></div>
+      <div class="hist-meta">${DIAS_FULL[h.day]||'—'} · ${pad(h.hour)}:${pad(h.min)} · ~${h.dur} min · ${h.date||''} ${h.time||''}</div>
+      <div class="hist-time"><i class="ti ti-clock-check"></i> ${fmtSec(h.actualTime||0)} · ${dl}</div>`;
     el.appendChild(d);
   });
 }
 
-function clearHistorial(){
+async function clearHistorial(){
   if(!confirm('¿Borrar todo el historial?'))return;
-  history=[];saveHistory();renderHistorial();showToast('Historial eliminado');
+  history=[];saveHistLocal();renderHistorial();
+  try{await sb.from('history').delete().eq('user_code',myCode);}catch(e){}
+  showToast('Historial eliminado');
 }
 
-/* ══ RENDER DÍA NAV ══ */
+/* ══ RENDER ══ */
 function renderDayNav(){
   const nav=document.getElementById('day-nav');nav.innerHTML='';
   DAYS.forEach((d,i)=>{
-    const b=document.createElement('button');
-    b.className='dnb'+(i===curDay?' active':'');b.textContent=d;
-    b.onclick=()=>{curDay=i;renderAll();};nav.appendChild(b);
+    const b=document.createElement('button');b.className='dnb'+(i===curDay?' active':'');
+    b.textContent=d;b.onclick=()=>{curDay=i;renderAll();};nav.appendChild(b);
   });
 }
 
-/* ══ RENDER TAREAS ══ */
 function renderTasks(){
   const list=document.getElementById('tasks-list');
-  const dt=tasks.filter(t=>t.days.includes(curDay)).sort((a,b)=>a.hour*60+a.min-(b.hour*60+b.min));
-  const total=tasks.filter(t=>t.days.includes(curDay)).length;
-  document.getElementById('tasks-label').textContent='Tareas ('+total+')';
+  const dt=tasks.filter(t=>t.days&&t.days.includes(curDay)).sort((a,b)=>a.hour*60+a.min-(b.hour*60+b.min));
+  document.getElementById('tasks-label').textContent='Tareas ('+dt.length+')';
   if(!dt.length){list.innerHTML=`<div class="empty"><i class="ti ti-calendar-off"></i>Sin tareas para el <b>${DAYS[curDay]}</b>.<br>Guardá una arriba.</div>`;return;}
   const badges={
     pending:`<span class="badge pending"><i class="ti ti-clock"></i> Pendiente</span>`,
     running:`<span class="badge running"><i class="ti ti-player-play"></i> En curso</span>`,
-    done:`<span class="badge done"><i class="ti ti-check"></i> Finalizada</span>`,
     alarming:`<span class="badge alarming"><i class="ti ti-bell-ringing"></i> ¡Alarma!</span>`,
   };
   list.innerHTML='';
@@ -709,30 +700,27 @@ function renderTasks(){
     let actions='';
     if(t.state==='pending')actions=`<button class="btn" onclick="startTask(${t.id})"><i class="ti ti-player-play"></i> Iniciar</button>`;
     if(t.state==='running'||t.state==='alarming')actions=`<button class="btn green-btn" onclick="finishTask(${t.id})"><i class="ti ti-check"></i> Finalizar</button>`;
-    const fb=t.fromFriend?` <span class="badge amber" style="font-size:10px"><i class="ti ti-user"></i>${escH(t.sentBy)}</span>`:'';
+    const fb=t.from_friend?` <span class="badge amber" style="font-size:10px"><i class="ti ti-user"></i>${escH(t.sent_by)}</span>`:'';
     card.innerHTML=`<div class="tc-top">
       <div style="flex:1;min-width:0"><div class="tc-name">${escH(t.name)}${fb}</div>
       <div class="tc-meta">${pad(t.hour)}:${pad(t.min)} · ~${t.dur} min · ${dLabel}</div></div>
       <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
         ${badges[t.state]||''}
         <button class="btn icon-btn" onclick="deleteTask(${t.id})"><i class="ti ti-trash"></i></button>
-      </div></div>
-      ${mid}
-      ${actions?`<div class="tc-actions">${actions}</div>`:''}`;
+      </div></div>${mid}${actions?`<div class="tc-actions">${actions}</div>`:''}`;
     list.appendChild(card);
   });
 }
 
-/* ══ RENDER RESUMEN ══ */
 function renderSummary(){
-  const dt=tasks.filter(t=>t.days.includes(curDay));
+  const dt=tasks.filter(t=>t.days&&t.days.includes(curDay));
   const todayHist=history.filter(h=>h.days&&h.days.includes(curDay));
   const sel=document.getElementById('summary');
   if(!dt.length&&!todayHist.length){sel.style.display='none';return;}
   sel.style.display='block';
   const pend=dt.filter(t=>t.state==='pending');
   const estMin=dt.reduce((a,t)=>a+t.dur,0);
-  const realSec=todayHist.reduce((a,h)=>a+h.actualTime,0);
+  const realSec=todayHist.reduce((a,h)=>a+(h.actualTime||0),0);
   let eff='—',effG=false;
   if(todayHist.length){const pct=Math.round(todayHist.reduce((a,h)=>a+h.dur*60,0)/Math.max(realSec,1)*100);eff=pct+'%';effG=pct>=100;}
   document.getElementById('sgrid').innerHTML=`
@@ -743,9 +731,9 @@ function renderSummary(){
     <div class="sbox"><div class="sl">Eficiencia</div><div class="sv ${effG?'g':''}">${eff}</div></div>`:''}`;
   let adj='';
   if(todayHist.length>1&&pend.length){
-    const ratio=todayHist.reduce((a,h)=>a+h.actualTime/(h.dur*60),0)/todayHist.length;
+    const ratio=todayHist.reduce((a,h)=>a+(h.actualTime||0)/(h.dur*60),0)/todayHist.length;
     const pm=pend.reduce((a,t)=>a+t.dur,0),am=Math.round(pm*ratio);
-    if(am!==pm){const d=am-pm,s=d>0?'+':'';adj=`<div class="sadj"><i class="ti ti-adjustments-horizontal"></i><span>Según tu ritmo, las pendientes tomarían <b>${am} min</b> (${s}${d} min vs estimado)</span></div>`;}
+    if(am!==pm){const diff=am-pm,s=diff>0?'+':'';adj=`<div class="sadj"><i class="ti ti-adjustments-horizontal"></i><span>Según tu ritmo, las pendientes tomarían <b>${am} min</b> (${s}${diff} min vs estimado)</span></div>`;}
   }
   document.getElementById('sadj').innerHTML=adj;
 }
@@ -759,7 +747,8 @@ function escH(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').rep
 /* ══ CHEQUEO PERIÓDICO ══ */
 setInterval(()=>{
   const n=new Date();
-  tasks.forEach(t=>{if(t.state==='pending'&&t.days.includes(curDay)&&!t.alarmRef)if(n.getHours()===t.hour&&n.getMinutes()===t.min)triggerAlarm(t.id);});
+  tasks.forEach(t=>{if(t.state==='pending'&&t.days&&t.days.includes(curDay)&&!t.alarmRef)
+    if(n.getHours()===t.hour&&n.getMinutes()===t.min)triggerAlarm(t.id);});
 },15000);
 setInterval(()=>{if(curTab==='compartir')cargarRecibidas();},30000);
 
