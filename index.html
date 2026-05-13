@@ -1,5 +1,11 @@
 <!DOCTYPE html>
-e-mobile-web-app-title" content="Planificador"/>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Planificador"/>
 <meta name="theme-color" content="#7c6ef5"/>
 <title>Planificador Semanal</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
@@ -115,6 +121,22 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:sys
 </style>
 </head>
 <body>
+<!-- SETUP SCREEN -->
+<div id="setup-screen" style="display:none;position:fixed;inset:0;background:#0d0d14;z-index:9999;align-items:center;justify-content:center;padding:24px">
+  <div style="width:100%;max-width:340px;text-align:center">
+    <div style="width:56px;height:56px;background:#7c6ef5;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;color:#fff;margin:0 auto 20px">📅</div>
+    <h2 style="font-size:22px;font-weight:700;color:#e2e2f0;margin-bottom:8px">Planificador Semanal</h2>
+    <p style="font-size:14px;color:#6666aa;margin-bottom:28px">Elegí un código de 4 letras o números.<br>Este código te identifica y <b style="color:#a08fff">nunca cambia</b>.</p>
+    <input id="setup-code" type="text" maxlength="4" placeholder="Ej: ZOE6" 
+      style="width:100%;background:#13131e;border:2px solid #2a2a40;color:#e2e2f0;border-radius:12px;padding:16px;font-size:28px;font-weight:700;text-align:center;letter-spacing:.2em;outline:none;text-transform:uppercase;margin-bottom:8px;font-family:inherit"/>
+    <p id="setup-error" style="font-size:12px;color:#e05c5c;margin-bottom:16px;min-height:18px"></p>
+    <button onclick="confirmarCodigo()" style="width:100%;background:#7c6ef5;border:none;color:#fff;border-radius:12px;padding:15px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit">
+      Confirmar mi código
+    </button>
+    <p style="font-size:11px;color:#555580;margin-top:16px">Podés usar letras y números. Ejemplo: ZOE6, A3F7, LUNA</p>
+  </div>
+</div>
+
 <div class="root">
   <div class="header">
     <div class="logo"><i class="ti ti-calendar-check"></i></div>
@@ -186,7 +208,19 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:sys
         <div class="code-big" id="my-code">----</div>
         <p>Compartí este código para que otros te envíen tareas o vean tu historial</p>
       </div>
-      <button class="btn primary full" onclick="copyCode()"><i class="ti ti-copy"></i> Copiar mi código</button>
+      <div style="display:flex;gap:8px;margin-bottom:0">
+        <button class="btn primary full" onclick="copyCode()"><i class="ti ti-copy"></i> Copiar código</button>
+        <button class="btn full" onclick="mostrarCambiarCodigo()" style="border-color:var(--amber);color:var(--amber)"><i class="ti ti-edit"></i> Cambiar</button>
+      </div>
+      <div id="change-code-form" style="display:none;margin-top:12px">
+        <div class="label">Escribí tu nuevo código (3-4 caracteres)</div>
+        <div style="display:flex;gap:8px">
+          <input id="new-code-input" type="text" maxlength="4" placeholder="Ej: ZOE6"
+            style="flex:1;background:var(--bg3);border:1px solid var(--border2);color:var(--text);border-radius:8px;padding:10px;font-size:20px;font-weight:700;text-align:center;letter-spacing:.15em;outline:none;text-transform:uppercase"/>
+          <button class="btn primary" onclick="aplicarCodigo()"><i class="ti ti-check"></i> OK</button>
+        </div>
+        <p style="font-size:11px;color:var(--muted);margin-top:6px">⚠️ Avisale a tus contactos tu nuevo código si lo cambiás</p>
+      </div>
     </div>
 
     <div class="share-card">
@@ -275,12 +309,46 @@ function saveTasks(){
 }
 function saveHistLocal(){saveLocal('planner_history2',history);}
 
-/* ══ CÓDIGO DE USUARIO ══ */
+/* ══ CÓDIGO DE USUARIO PERMANENTE ══ */
 function getOrCreateCode(){
-  let c=localStorage.getItem('my_planner_code2');
-  if(!c){c=Math.random().toString(36).substring(2,6).toUpperCase();localStorage.setItem('my_planner_code2',c);}
+  const keys = ['my_planner_code_fixed','my_planner_code2','my_planner_code'];
+  let c = null;
+  for(const k of keys){
+    const v = localStorage.getItem(k);
+    if(v && v.length >= 3){ c = v.toUpperCase(); break; }
+  }
+  if(!c){
+    c = Math.random().toString(36).substring(2,6).toUpperCase();
+  }
+  for(const k of keys){ localStorage.setItem(k, c); }
   return c;
 }
+
+function confirmarCodigo(){
+  const input = document.getElementById('setup-code');
+  const err = document.getElementById('setup-error');
+  const code = input.value.trim().toUpperCase();
+  if(code.length < 3){ err.textContent='El código debe tener al menos 3 caracteres'; return; }
+  if(code.length > 4){ err.textContent='El código debe tener máximo 4 caracteres'; return; }
+  const keys = ['my_planner_code_fixed','my_planner_code2','my_planner_code'];
+  for(const k of keys){ localStorage.setItem(k, code); }
+  myCode = code;
+  document.getElementById('my-code').textContent = code;
+  document.getElementById('setup-screen').style.display='none';
+  showToast('Código guardado: '+code,'ok');
+  syncInit();
+}
+
+/* ══ VERIFICAR CÓDIGO AL CARGAR ══ */
+window.addEventListener('load', ()=>{
+  const el = document.getElementById('my-code');
+  if(el && myCode !== 'TEMP') el.textContent = myCode;
+  // Auto-focus en setup
+  const si = document.getElementById('setup-code');
+  if(si) si.addEventListener('keydown', e=>{ if(e.key==='Enter') confirmarCodigo(); });
+  // Convertir a mayúsculas mientras escribe
+  if(si) si.addEventListener('input', ()=>{ si.value=si.value.toUpperCase(); });
+});
 
 /* ══ SUPABASE HELPERS ══ */
 async function sbEnsureUser(){
@@ -357,21 +425,24 @@ async function syncInit(){
 /* ══ TAREAS RECIBIDAS ══ */
 async function cargarRecibidas(){
   try{
-    const {data}=await sb.from('tasks').select('*').eq('sent_by',myCode).neq('user_code',myCode);
-    // Cargar tareas enviadas a mí por otros
-    const {data:incoming}=await sb.from('tasks').select('*').eq('user_code',myCode).eq('from_friend',true);
+    // Buscar todas las tareas donde user_code es mi código Y from_friend es true
+    const {data:incoming, error}=await sb.from('tasks').select('*').eq('user_code',myCode).eq('from_friend',true);
+    if(error) throw error;
     if(incoming&&incoming.length){
       incoming.forEach(t=>{
         const parsed={...t,days:JSON.parse(t.days||'[]'),timerRef:null,startedAt:null,alarmRef:null};
-        if(!tasks.find(x=>x.id===parsed.id)){
+        if(!tasks.find(x=>String(x.id)===String(parsed.id))){
           tasks.push(parsed);scheduleAlarm(tasks[tasks.length-1]);
         }
       });
       saveTasks();renderAll();
     }
     renderRecibidas(incoming||[]);
-    setSyncStatus('ok','Sincronizado');
-  }catch(e){setSyncStatus('err','Error de conexión');}
+    setSyncStatus('ok','Sincronizado ✓');
+  }catch(e){
+    console.error('cargarRecibidas error:',e);
+    setSyncStatus('err','Error de conexión');
+  }
 }
 
 function renderRecibidas(list){
@@ -474,6 +545,26 @@ function copyCode(){
   navigator.clipboard.writeText(myCode)
     .then(()=>showToast('Código copiado: '+myCode,'ok'))
     .catch(()=>showToast('Tu código es: '+myCode,'ok'));
+}
+
+function mostrarCambiarCodigo(){
+  const f = document.getElementById('change-code-form');
+  f.style.display = f.style.display==='none'?'block':'none';
+  const inp = document.getElementById('new-code-input');
+  if(inp){ inp.value=myCode; inp.focus(); inp.select(); }
+}
+
+async function aplicarCodigo(){
+  const inp = document.getElementById('new-code-input');
+  const code = inp.value.trim().toUpperCase();
+  if(code.length < 3){ showToast('Mínimo 3 caracteres','err'); return; }
+  const keys = ['my_planner_code_fixed','my_planner_code2','my_planner_code'];
+  for(const k of keys){ localStorage.setItem(k, code); }
+  myCode = code;
+  document.getElementById('my-code').textContent = code;
+  document.getElementById('change-code-form').style.display='none';
+  showToast('Código cambiado a: '+code,'ok');
+  try{ await sbEnsureUser(); }catch(e){}
 }
 
 /* ══ TABS ══ */
@@ -778,75 +869,5 @@ document.getElementById('my-code').textContent=myCode;
 renderAll();
 syncInit();
 </script>
-</body><input id="email" placeholder="correo">
-
-<input id="password" type="password" placeholder="contraseña">
-
-<button onclick="registrarse()">
-Registrarse
-</button>
-
-<button onclick="login()">
-Ingresar
-</button>
-
-<script>
-
-async function registrarse() {
-
-  const email =
-    document.getElementById("email").value;
-
-  const password =
-    document.getElementById("password").value;
-
-  const { error } =
-    await supabase.auth.signUp({
-
-      email: email,
-      password: password
-
-    });
-
-  if(error){
-
-    alert(error.message);
-
-  } else {
-
-    alert("Usuario creado");
-
-  }
-
-}
-
-async function login() {
-
-  const email =
-    document.getElementById("email").value;
-
-  const password =
-    document.getElementById("password").value;
-
-  const { error } =
-    await supabase.auth.signInWithPassword({
-
-      email: email,
-      password: password
-
-    });
-
-  if(error){
-
-    alert(error.message);
-
-  } else {
-
-    alert("Login correcto");
-
-  }
-
-}
-
-</script>
+</body>
 </html>
