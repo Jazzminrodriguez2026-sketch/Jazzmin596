@@ -202,13 +202,15 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:sys
 
   <!-- PANEL COMPARTIR -->
   <div id="panel-compartir" style="display:none">
+
+    <!-- TU CÓDIGO -->
     <div class="share-card">
       <h2><i class="ti ti-id"></i> Tu código personal</h2>
       <div class="code-box">
         <div class="code-big" id="my-code">----</div>
-        <p>Compartí este código para que otros te envíen tareas o vean tu historial</p>
+        <p>Compartí este código para que otros te envíen tareas o vean tus tareas</p>
       </div>
-      <div style="display:flex;gap:8px;margin-bottom:0">
+      <div style="display:flex;gap:8px">
         <button class="btn primary full" onclick="copyCode()"><i class="ti ti-copy"></i> Copiar código</button>
         <button class="btn full" onclick="mostrarCambiarCodigo()" style="border-color:var(--amber);color:var(--amber)"><i class="ti ti-edit"></i> Cambiar</button>
       </div>
@@ -221,8 +223,10 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:sys
         </div>
         <p style="font-size:11px;color:var(--muted);margin-top:6px">⚠️ Avisale a tus contactos tu nuevo código si lo cambiás</p>
       </div>
+      <div class="sync-row" style="margin-top:10px"><div class="dot" id="sync-dot"></div><span id="sync-text">Cargando...</span></div>
     </div>
 
+    <!-- ENVIAR TAREA -->
     <div class="share-card">
       <h2><i class="ti ti-user-plus"></i> Enviar tarea a alguien</h2>
       <div class="label">Código de la otra persona</div>
@@ -250,20 +254,28 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:sys
       </div>
     </div>
 
+    <!-- VER TAREAS DE ALGUIEN -->
     <div class="share-card">
-      <h2><i class="ti ti-eye"></i> Ver historial de alguien</h2>
+      <h2><i class="ti ti-eye"></i> Ver tareas de alguien</h2>
       <div class="input-row">
-        <input id="hist-code" type="text" placeholder="Código ej: B9KL" maxlength="4" style="text-transform:uppercase;letter-spacing:.15em;font-size:18px;font-weight:700"/>
-        <button class="btn primary" onclick="verHistorialAmigo()"><i class="ti ti-eye"></i></button>
+        <input id="hist-code" type="text" placeholder="Código ej: 0H9L" maxlength="4" style="text-transform:uppercase;letter-spacing:.15em;font-size:18px;font-weight:700"/>
+        <button class="btn primary" onclick="verTareasAmigo()"><i class="ti ti-eye"></i></button>
       </div>
-      <div id="amigo-historial" style="margin-top:10px"></div>
+      <div id="amigo-tareas" style="margin-top:10px"></div>
     </div>
 
+    <!-- TAREAS QUE ENVIASTE -->
+    <div class="share-card">
+      <h2><i class="ti ti-send"></i> Tareas que enviaste</h2>
+      <div id="sent-tasks-list"></div>
+    </div>
+
+    <!-- TAREAS QUE TE ENVIARON -->
     <div class="share-card">
       <h2><i class="ti ti-inbox"></i> Tareas que te enviaron</h2>
-      <div class="tasks" id="incoming-list"></div>
-      <div class="sync-row"><div class="dot" id="sync-dot"></div><span id="sync-text">Cargando...</span></div>
+      <div id="incoming-list"></div>
     </div>
+
   </div>
 </div>
 
@@ -425,8 +437,9 @@ async function syncInit(){
 /* ══ TAREAS RECIBIDAS ══ */
 async function cargarRecibidas(){
   try{
-    // Buscar todas las tareas donde user_code es mi código Y from_friend es true
-    const {data:incoming, error}=await sb.from('tasks').select('*').eq('user_code',myCode).eq('from_friend',true);
+    setSyncStatus('spin','Sincronizando...');
+    // Tareas recibidas (enviadas por otros a mí)
+    const {data:incoming,error}=await sb.from('tasks').select('*').eq('user_code',myCode).eq('from_friend',true);
     if(error) throw error;
     if(incoming&&incoming.length){
       incoming.forEach(t=>{
@@ -438,29 +451,89 @@ async function cargarRecibidas(){
       saveTasks();renderAll();
     }
     renderRecibidas(incoming||[]);
+
+    // Tareas que yo envié a otros
+    const {data:sent}=await sb.from('tasks').select('*').eq('sent_by',myCode).neq('user_code',myCode);
+    renderEnviadas(sent||[]);
+
     setSyncStatus('ok','Sincronizado ✓');
   }catch(e){
-    console.error('cargarRecibidas error:',e);
+    console.error('cargarRecibidas:',e);
     setSyncStatus('err','Error de conexión');
   }
 }
 
 function renderRecibidas(list){
   const el=document.getElementById('incoming-list');
-  if(!list||!list.length){el.innerHTML='<div class="empty"><i class="ti ti-inbox"></i>Nadie te envió tareas aún</div>';return;}
-  el.innerHTML='';
+  if(!list||!list.length){
+    el.innerHTML='<div class="empty"><i class="ti ti-inbox"></i>Nadie te envió tareas aún</div>';return;
+  }
+  // Agrupar por sent_by
+  const grupos={};
   list.forEach(t=>{
-    const d=document.createElement('div');d.className='tc shared-in';
-    d.innerHTML=`<div class="tc-top"><div><div class="tc-name">${escH(t.name)}</div>
-    <div class="tc-meta">${pad(t.hour)}:${pad(t.min)} · ~${t.dur} min · De: <b>${escH(t.sent_by||'?')}</b></div></div>
-    <span class="badge amber"><i class="ti ti-user"></i> Recibida</span></div>`;
-    el.appendChild(d);
+    const k=t.sent_by||'?';
+    if(!grupos[k])grupos[k]=[];
+    grupos[k].push(t);
+  });
+  el.innerHTML='';
+  Object.entries(grupos).forEach(([code,tareas])=>{
+    const header=document.createElement('div');
+    header.style.cssText='font-size:12px;color:var(--amber);font-weight:600;margin:10px 0 6px;display:flex;align-items:center;gap:6px';
+    header.innerHTML=`<i class="ti ti-user"></i> De <b>${escH(code)}</b> (${tareas.length} tarea${tareas.length>1?'s':''})`;
+    el.appendChild(header);
+    tareas.forEach(t=>{
+      const d=document.createElement('div');d.className='tc shared-in';
+      const stBadge=t.state==='done'
+        ?'<span class="badge done"><i class="ti ti-check"></i> Hecha</span>'
+        :'<span class="badge pending"><i class="ti ti-clock"></i> Pendiente</span>';
+      d.innerHTML=`<div class="tc-top">
+        <div><div class="tc-name">${escH(t.name)}</div>
+        <div class="tc-meta">${pad(t.hour||0)}:${pad(t.min||0)} · ~${t.dur} min · ${(JSON.parse(t.days||'[]')).map(d=>DAYS[d]).join(', ')}</div></div>
+        ${stBadge}
+      </div>`;
+      el.appendChild(d);
+    });
+  });
+}
+
+function renderEnviadas(list){
+  const el=document.getElementById('sent-tasks-list');
+  if(!list||!list.length){
+    el.innerHTML='<div class="empty"><i class="ti ti-send"></i>No enviaste tareas aún</div>';return;
+  }
+  // Agrupar por user_code (destinatario)
+  const grupos={};
+  list.forEach(t=>{
+    const k=t.user_code||'?';
+    if(!grupos[k])grupos[k]=[];
+    grupos[k].push(t);
+  });
+  el.innerHTML='';
+  Object.entries(grupos).forEach(([code,tareas])=>{
+    const header=document.createElement('div');
+    header.style.cssText='font-size:12px;color:var(--accent3);font-weight:600;margin:10px 0 6px;display:flex;align-items:center;gap:6px';
+    header.innerHTML=`<i class="ti ti-user-check"></i> Para <b>${escH(code)}</b> (${tareas.length} tarea${tareas.length>1?'s':''})`;
+    el.appendChild(header);
+    tareas.forEach(t=>{
+      const d=document.createElement('div');d.className='tc';
+      const stBadge=t.state==='done'
+        ?'<span class="badge done"><i class="ti ti-check"></i> Hecha</span>'
+        :'<span class="badge pending"><i class="ti ti-clock"></i> Pendiente</span>';
+      d.innerHTML=`<div class="tc-top">
+        <div><div class="tc-name">${escH(t.name)}</div>
+        <div class="tc-meta">${pad(t.hour||0)}:${pad(t.min||0)} · ~${t.dur} min · ${(JSON.parse(t.days||'[]')).map(d=>DAYS[d]).join(', ')}</div></div>
+        ${stBadge}
+      </div>`;
+      el.appendChild(d);
+    });
   });
 }
 
 function setSyncStatus(type,txt){
-  document.getElementById('sync-dot').className='dot '+type;
-  document.getElementById('sync-text').textContent=txt;
+  const dot=document.getElementById('sync-dot');
+  const txt_el=document.getElementById('sync-text');
+  if(dot)dot.className='dot '+type;
+  if(txt_el)txt_el.textContent=txt;
 }
 
 /* ══ BUSCAR AMIGO ══ */
@@ -517,27 +590,65 @@ async function enviarTarea(){
 }
 
 /* ══ VER HISTORIAL DE AMIGO ══ */
-async function verHistorialAmigo(){
+async function verTareasAmigo(){
   const code=document.getElementById('hist-code').value.trim().toUpperCase();
-  if(code.length<4){showToast('Ingresá un código de 4 letras','err');return;}
-  const el=document.getElementById('amigo-historial');
-  el.innerHTML='<div class="sync-row"><div class="dot spin"></div><span>Cargando historial...</span></div>';
+  if(code.length<3){showToast('Ingresá el código','err');return;}
+  const el=document.getElementById('amigo-tareas');
+  el.innerHTML='<div class="sync-row"><div class="dot spin"></div><span>Cargando tareas...</span></div>';
   try{
-    const {data}=await sb.from('history').select('*').eq('user_code',code).order('id',{ascending:false});
-    if(!data||!data.length){el.innerHTML='<div class="empty"><i class="ti ti-history"></i>Este usuario no tiene historial aún</div>';return;}
-    el.innerHTML=`<div class="label" style="margin-bottom:8px">Historial de ${code} — ${data.length} tareas</div>`;
-    data.forEach(h=>{
-      const diff=(h.actual_time||0)-h.dur*60;
-      const dl=diff===0?'En tiempo':diff>0?'+'+fmtSec(diff)+' extra':'-'+fmtSec(Math.abs(diff))+' ahorrado';
-      const d=document.createElement('div');d.className='hist-item';
-      d.innerHTML=`<div class="tc-top" style="margin-bottom:4px">
-        <div class="hist-name">${escH(h.name)}</div>
-        <span class="badge done"><i class="ti ti-check"></i> Finalizada</span></div>
-        <div class="hist-meta">${DIAS_FULL[h.day]||'—'} · ${pad(h.hour)}:${pad(h.min)} · ~${h.dur} min · ${h.date||''} ${h.time||''}</div>
-        <div class="hist-time"><i class="ti ti-clock-check"></i> ${fmtSec(h.actual_time||0)} · ${dl}</div>`;
-      el.appendChild(d);
-    });
-  }catch(e){el.innerHTML='<div class="empty"><i class="ti ti-wifi-off"></i>Error de conexión</div>';}
+    // Tareas pendientes/en curso
+    const {data:pendientes,error:e1}=await sb.from('tasks').select('*').eq('user_code',code);
+    if(e1) throw e1;
+    // Historial (finalizadas)
+    const {data:finalizadas,error:e2}=await sb.from('history').select('*').eq('user_code',code).order('id',{ascending:false});
+    if(e2) throw e2;
+
+    if((!pendientes||!pendientes.length)&&(!finalizadas||!finalizadas.length)){
+      el.innerHTML='<div class="empty"><i class="ti ti-user-off"></i>Este usuario no tiene tareas aún</div>';
+      return;
+    }
+
+    el.innerHTML=`<div class="label" style="margin-bottom:8px">Tareas de <b>${code}</b></div>`;
+
+    // Mostrar pendientes
+    if(pendientes&&pendientes.length){
+      const h=document.createElement('div');
+      h.style.cssText='font-size:12px;color:var(--accent3);font-weight:600;margin:8px 0 6px';
+      h.innerHTML=`<i class="ti ti-clock"></i> Pendientes (${pendientes.length})`;
+      el.appendChild(h);
+      pendientes.forEach(t=>{
+        const parsed={...t,days:JSON.parse(t.days||'[]')};
+        const d=document.createElement('div');d.className='tc '+(t.from_friend?'shared-in':'');
+        d.innerHTML=`<div class="tc-top">
+          <div><div class="tc-name">${escH(t.name)}</div>
+          <div class="tc-meta">${pad(t.hour||0)}:${pad(t.min||0)} · ~${t.dur} min · ${parsed.days.map(d=>DAYS[d]).join(', ')}</div></div>
+          <span class="badge pending"><i class="ti ti-clock"></i> Pendiente</span>
+        </div>`;
+        el.appendChild(d);
+      });
+    }
+
+    // Mostrar finalizadas
+    if(finalizadas&&finalizadas.length){
+      const h=document.createElement('div');
+      h.style.cssText='font-size:12px;color:var(--green);font-weight:600;margin:12px 0 6px';
+      h.innerHTML=`<i class="ti ti-check"></i> Finalizadas (${finalizadas.length})`;
+      el.appendChild(h);
+      finalizadas.forEach(h=>{
+        const diff=(h.actual_time||0)-h.dur*60;
+        const dl=diff===0?'En tiempo':diff>0?'+'+fmtSec(diff)+' extra':'-'+fmtSec(Math.abs(diff))+' ahorrado';
+        const d=document.createElement('div');d.className='hist-item';
+        d.innerHTML=`<div class="tc-top" style="margin-bottom:4px">
+          <div class="hist-name">${escH(h.name)}</div>
+          <span class="badge done"><i class="ti ti-check"></i> Hecha</span></div>
+          <div class="hist-meta">${DIAS_FULL[h.day]||'—'} · ${pad(h.hour||0)}:${pad(h.min||0)} · ~${h.dur} min · ${h.date||''}</div>
+          <div class="hist-time"><i class="ti ti-clock-check"></i> ${fmtSec(h.actual_time||0)} · ${dl}</div>`;
+        el.appendChild(d);
+      });
+    }
+  }catch(e){
+    el.innerHTML='<div class="empty"><i class="ti ti-wifi-off"></i>Error: '+e.message+'</div>';
+  }
 }
 
 /* ══ COPIAR CÓDIGO ══ */
